@@ -5,8 +5,6 @@ require('lib/core.lib');
 
 	session_start();
 
-	//get_param($param);
-
 	// データベース接続
 	$dbcon = database_connect();
 
