@@ -5,7 +5,7 @@ define('DB_NAME', 'データベース名');
 define('DB_USER', 'データベースユーザー'); 
 define('DB_PASS', 'データベースパスワード'); 
 
-define('BASE_PATH' , '/web/sites/www.~.com');
+define('BASE_PATH' , 'www.~.com');
 
 define('LOG_PATH' , BASE_PATH.'/logs');
 define('INCLUDE_PATH' , BASE_PATH.'/lib');
