@@ -1,0 +1,22 @@
+function get_param(&$params) {
+
+	if ($_SERVER['REQUEST_METHOD'] == "POST") { $params = $_POST; }
+	else if ($_SERVER['REQUEST_METHOD'] == "GET") { $params = $_GET; }
+	else { $params = $_REQUEST; }
+
+	foreach ($params as $key => &$value) {
+		if (is_array($value)) {
+			for ($x = 0; $x < count($value); $x++) {
+				$value[$x] = mb_convert_kana($value[$x], "KV", "utf-8");	// (半角カナ→全角カナ)
+				$value[$x] = stripslashes($value[$x]);
+				$value[$x] = preg_replace("\"" , "'" , $value[$x]);
+			}
+		} else {
+			$value = mb_convert_kana($value, "KV", "utf-8");	// (半角カナ→全角カナ)
+			$value = stripslashes($value);
+			$value = preg_replace("\"" , "'" , $value);
+		}
+	}
+
+	return;
+}
