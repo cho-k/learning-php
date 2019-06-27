@@ -1,3 +1,5 @@
+<?php
+
 function get_param(&$params) {
 
 	if ($_SERVER['REQUEST_METHOD'] == "POST") { $params = $_POST; }
@@ -20,3 +22,123 @@ function get_param(&$params) {
 
 	return;
 }
+
+function database_connect() {
+	$GLOBALS['dbcon'] = mysql_connect(DB_HOST, DB_USER, DB_PASS) or die("cannot connect to the database because: ".mysql_error());
+	mysql_select_db(DB_NAME);
+	mysql_set_charset('utf8');
+
+	return $GLOBALS['dbcon'];
+}
+
+function database_close() {
+	mysql_close($GLOBALS['dbcon']);
+}
+
+function insert_shift(&$param_post, &$i) {
+	$date = $param_post['year'] . '-' . sprintf('%02d', $param_post['month']) . '-' . sprintf('%02d', $i);
+	$datetime_on = $param_post['year'] . '-' . sprintf('%02d', $param_post['month']) . '-' . sprintf('%02d', $i) . ' ' . $param_post['kintai_on'][$i] . ':00';
+	$datetime_off = $param_post['year'] . '-' . sprintf('%02d', $param_post['month']) . '-' . sprintf('%02d', $i) . ' ' . $param_post['kintai_off'][$i] . ':00';
+	$sql = <<<DOC_END
+replace into dat_shift (
+	user_cd,
+	kintai_day,
+	regist_user,
+	update_user,
+	kintai_on,
+	kintai_off
+) values (
+	'{$_SESSION["user_cd"]}',
+	'{$date}',
+	'{$_SESSION["user_cd"]}',
+	'{$_SESSION["user_cd"]}',
+	'{$datetime_on}',
+	'{$datetime_off}'
+)
+DOC_END;
+	write_sql_log($sql);
+
+	$query = mysql_query($sql);
+	if (!$query) { write_sql_log("cannot execute: ".mysql_error()); }
+
+	$sql = "DELETE FROM dat_shift WHERE kintai_on LIKE '%00:00:00'";
+	write_sql_log($sql);
+
+	$query = mysql_query($sql);
+	if (!$query) { write_sql_log("cannot execute: ".mysql_error()); }
+	return;
+}
+
+function get_calendar(&$result_array) {
+	$numrows = 0;
+	$x = 0;
+	$sql = "SELECT * FROM shift WHERE user_cd = " . $_SESSION['user_cd'];
+
+	if ($query = mysql_query($sql)) {
+		while($element = mysql_fetch_array($query)){
+			$result_array[$x] = $element;
+			$x++;
+		}
+	} else {
+		write_sql_log("cannot execute \"".$sql."\": ".mysql_error());
+	}
+
+	// (全件数)
+	$sql = "select found_rows() as allcnt";
+	if ($query = mysql_query($sql)) {
+		$element = mysql_fetch_array($query);
+		$numrows = $element['allcnt'];
+	} else {
+		write_sql_log("cannot execute \"".$sql."\": ".mysql_error());
+	}
+	return $numrows;
+}
+
+function get_holiday(&$result_array) {
+	$numrows = 0;
+	$x = 0;
+	$sql = "SELECT * FROM holiday"; 
+
+	if ($query = mysql_query($sql)) {
+		while($element = mysql_fetch_array($query)){
+			$result_array[$x] = $element;
+			$x++;
+		}
+	} else {
+		write_sql_log("cannot execute \"".$sql."\": ".mysql_error());
+	}
+
+	// (全件数)
+	$sql = "select found_rows() as allcnt";
+	if ($query = mysql_query($sql)) {
+		$element = mysql_fetch_array($query);
+		$numrows = $element['allcnt'];
+	} else {
+		write_sql_log("cannot execute \"".$sql."\": ".mysql_error());
+	}
+	return $numrows;
+}
+
+function insert_trainfee(&$param, &$user_cd) {
+	$sql = "UPDATE sys_user SET train_fee = '" . $param . "' WHERE user_cd = " . $user_cd;
+	write_sql_log($sql);
+	$query = mysql_query($sql);
+	if (!$query) { write_sql_log("cannot execute: ".mysql_error()); }
+}
+
+function get_trainfee(&$user_cd) {
+	$sql = "SELECT train_fee FROM sys_user WHERE user_cd = " . $user_cd;
+	if ($query = mysql_query($sql)) {
+		return mysql_fetch_row($query);
+	} else {
+		write_sql_log("cannot execute \"".$sql."\": ".mysql_error());
+	}
+}
+
+function write_sql_log($message) {
+	$message = date("Y/m/d H:i:s")." [".$_SESSION['user_cd']."] ".$_SERVER['REMOTE_ADDR']." ".$_SERVER['SCRIPT_FILENAME']."\n".$message."\n";
+	write_file(LOG_PATH."/".date("Y-m-d").".log", $message, "a");
+	return;
+}
+
+?>
