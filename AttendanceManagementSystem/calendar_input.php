@@ -1,6 +1,6 @@
 <?
-require('configuration.lib');
-require('core.lib');
+require('lib/configuration.lib');
+require('lib/core.lib');
 
 
 	session_start();
