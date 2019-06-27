@@ -1,0 +1,89 @@
+<!-- 一部省略 -->
+
+<body>
+<div>
+
+<section>
+<h3>カレンダー</h3>
+<article>
+<div align="center">
+<?php echo $param['year'] . "年" . $param['month'] . "月シフトの確認" ?>
+</div>
+<form action="calendar_input.php" method="post">
+<input type="hidden" name="month" value="<?php echo $param['month'] ?>">
+<input type="hidden" name="year" value="<?php echo $param['year'] ?>">
+<div>
+<table>
+    <tr>
+        <th>日</th>
+        <th>月</th>
+        <th>火</th>
+        <th>水</th>
+        <th>木</th>
+        <th>金</th>
+        <th>土</th>
+    </tr>
+<?php
+	$start_week = date("w", mktime(0, 0, 0, $param['month'], 1, $param['year']));
+	$number_of_day = date("t", mktime(0, 0, 0, $param['month'], 1, $param['year']));
+	$count = 0;
+	while($count < $start_week) {
+		if(($count % 7) == 0) {
+			echo "<tr>";
+			echo "<td style='background-color:#FF6347'></td>";
+		}else{
+			echo "<td></td>";
+		}
+		$count++;
+	}
+	for($i = 1; $i <= $number_of_day; $i++) {
+		if(!empty($HOLIDAY[$param['year'] . '-' . sprintf('%02d', $_POST['month']) . '-' . sprintf('%02d', $i)])){
+			$td = "<td style='background-color:#00FA9A'>";
+		}elseif(($count % 7) == 0){
+			$td = "<td style='background-color:#FF6347'>";
+		}elseif(($count % 7) == 6){
+			$td = "<td style='background-color:#6495ED'>";
+		}else{
+			$td = "<td>";
+		}
+		if(!empty($HOLIDAY[$param['year'] . '-' . sprintf('%02d', $_POST['month']) . '-' . sprintf('%02d', $i)]) && ($count % 7) == 0){
+			echo "<tr>";
+			echo $td . $i . "<br><input type='hidden' name='kintai_on[$i]' value='" . $param['kintai_on'][$i] . "'><input type='hidden' name='kintai_off[$i]' value='" . $param['kintai_off'][$i] . "'><p align='center'>×</p></td>";
+		}elseif(!empty($HOLIDAY[$param['year'] . '-' . sprintf('%02d', $_POST['month']) . '-' . sprintf('%02d', $i)])){
+			echo $td . $i . "<br><input type='hidden' name='kintai_on[$i]' value='" . $param['kintai_on'][$i] . "'><input type='hidden' name='kintai_off[$i]' value='" . $param['kintai_off'][$i] . "'><p align='center'>×</p></td>";
+		}elseif(($count % 7) == 0) {
+			echo "<tr>";
+			echo $td . $i . "<br><input type='hidden' name='kintai_on[$i]' value='" . $param['kintai_on'][$i] . "'><input type='hidden' name='kintai_off[$i]' value='" . $param['kintai_off'][$i] . "'><p align='center'>×</p></td>";
+		}elseif(($count % 7) == 6) {
+			echo $td . $i . "<br>出勤：<b>" . $param['kintai_on'][$i] . "</b><input type='hidden' name='kintai_on[$i]' value='" . $param['kintai_on'][$i] . "'><br>退勤：<b>" . $param['kintai_off'][$i] . "</b><input type='hidden' name='kintai_off[$i]' value='" . $param['kintai_off'][$i] . "'></td>";
+			echo "</tr>\n";
+//		}elseif(($count % 7) == 1){
+//			echo $td . $i . "<br><input type='hidden' name='kintai_on[$i]' value='" . $param['kintai_on'][$i] . "'><input type='hidden' name='kintai_off[$i]' value='" . $param['kintai_off'][$i] . "'><p align='center'>×</p></td>";
+		}elseif(($count % 7) == 4){
+			echo $td . $i . "<br><input type='hidden' name='kintai_on[$i]' value='" . $param['kintai_on'][$i] . "'><input type='hidden' name='kintai_off[$i]' value='" . $param['kintai_off'][$i] . "'><p align='center'>×</p></td>";
+		}else{
+			echo $td . $i . "<br>出勤：<b>" . $param['kintai_on'][$i] . "</b><input type='hidden' name='kintai_on[$i]' value='" . $param['kintai_on'][$i] . "'><br>退勤：<b>" . $param['kintai_off'][$i] . "</b><input type='hidden' name='kintai_off[$i]' value='" . $param['kintai_off'][$i] . "'></td>";
+		}
+		$count++;
+	}
+	while(true) {
+		if(($count % 7) == 6) {
+			echo "<td style='background-color:#6495ED'></td>";
+			echo "</tr>\n";
+			break;
+		}else{
+			echo "<td></td>";
+		}
+		$count++;
+	}
+?>
+</table>
+<br><br><button type="submit" name="save" value="1">保存</button>
+</div>
+</form>
+</article>
+</section>
+
+</div>
+</body>
+</html>
